@@ -2,16 +2,5 @@ FROM jenkins/agent:latest-jdk21
 
 USER root
 
-# RUN apt-get update -y \
-#     && apt-get install -y python3.10
-
-# RUN  add-apt-repository ppa:savoury1/python
-# RUN  apt update -y
-# RUN  apt-get install  -y python3
-
-# RUN apt-get install sudo -y
-# RUN apt-get install aptitude
-# RUN aptitude update
-# RUN aptitude upgrade
 RUN apt update -y
 RUN apt install -y python3
