@@ -1,0 +1,1 @@
+jenkins-jobs --conf ./config/job.ini update ./jobs/

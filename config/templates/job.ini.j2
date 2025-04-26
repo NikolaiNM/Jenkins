@@ -1,0 +1,10 @@
+[job_builder]
+recursive=True
+keep_descriptions=True
+
+[jenkins]
+url=http://127.0.0.1/
+user={{ '' | env('USER') }}
+password={{ '' | env('PASSWORD') }}
+timeout=30
+
