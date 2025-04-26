@@ -3,7 +3,7 @@
     name: 'jobs-updater'
     scm:
       - git:
-          url: https://github.com/NikolaiNM
+          url: git@github.com:NikolaiNM/Jenkins.git
           credentials-id: jankins
           branches:
             - FETCH_HEAD
