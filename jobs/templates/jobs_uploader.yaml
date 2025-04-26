@@ -5,7 +5,7 @@
     parameters:
       - string:
           name: REFSPEC
-          default: maste
+          default: main
           description: 'Branch of job uploader'
     pipeline-scm:
       scm:

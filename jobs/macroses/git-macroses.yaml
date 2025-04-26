@@ -4,7 +4,7 @@
     scm:
       - git:
           url: git@github.com:NikolaiNM/Jenkins.git
-          credentials-id: jankins
+          credentials-id: jenkins
           branches:
             - FETCH_HEAD
           refspec: $REFSPEC
