@@ -13,7 +13,7 @@
     name: 'docker-ce'
     scm:
       - git:
-          url: git@github.com:NikolaiNM/ui_tests.git
+          url: git@github.com:NikolaiNM/Otus_Pro_Dz1.git
           credentials-id: jenkins
           branches:
             - FETCH_HEAD
