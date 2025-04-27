@@ -6,7 +6,7 @@
       - 'jobs-uploader'
 
 - project:
-    name: dcoker-ce
+    name: docker-ce
     job-description: '<h4 style="color:#999696;">Deploy 123jenkins jobs</h4>'
     jobs:
       - 'docker-ce'
