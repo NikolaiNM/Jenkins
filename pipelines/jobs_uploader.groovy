@@ -59,31 +59,17 @@
 
 timeout(300) {
     node('python') {
-        // Параметр для явного указания владельца
-        properties([
-            parameters([
-                string(
-                    name: 'OWNER',
-                    defaultValue: 'admin',
-                    description: 'User who triggered the build'
-                )
-            ])
-        ])
+        // Явно получаем пользователя через Build User Vars или параметр
+        def owner = env.BUILD_USER ?: 'Automated (SCM)'
 
-        // Обновляем описание с branch и владельцем
         currentBuild.description = """
         BRANCH=${env.GIT_BRANCH}
-        Owner=${params.OWNER}
+        Owner=${owner}
         """.stripIndent()
 
         stage('Checkout') {
             dir('api-tests') {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${env.GIT_BRANCH}"]],
-                    extensions: [],
-                    userRemoteConfigs: [[url: 'ВАШ_SSH_ИЛИ_HTTPS_РЕПОЗИТОРИЙ']]
-                ])
+                checkout scm  // Используем стандартный checkout
             }
         }
 
@@ -102,7 +88,7 @@ timeout(300) {
                     properties: [],
                     reportBuildPolicy: 'ALWAYS',
                     results: [[path: './allure-results']]
-                )
+                ])
             }
         }
 
@@ -112,10 +98,10 @@ timeout(300) {
             dir('api-tests') {
                 withCredentials([usernamePassword(
                     credentialsId: 'jobs_builder_creds',
-                    usernameVariable: 'username',
-                    passwordVariable: 'password'
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
                 )]) {
-                    sh "USER=${username} PASSWORD=${password} python3 ${configScriptPath}"
+                    sh "USER=${USERNAME} PASSWORD=${PASSWORD} python3 ${configScriptPath}"
                 }
             }
         }
