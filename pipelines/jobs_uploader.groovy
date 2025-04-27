@@ -61,71 +61,38 @@
 //     }
 // }
 
+timeout(300) {
+    node('python') {
+        currentBuild.description = """
+        BRANCH=${REFSPEC}
+        Owner=${env.BUILD_USER ?: 'SYSTEM'}
+        """
 
-
-pipeline {
-    agent any
-
-    environment {
-        // Получаем ветку через git команду
-        BRANCH = "${env.BRANCH_NAME ?: sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()}"
-        // Получаем имя пользователя через Cause
-        Owner = "${currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')?.userName ?: 'SYSTEM'}"
-    }
-
-    stages {
         stage('Checkout') {
-            steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [],
-                    userRemoteConfigs: [[
-                        url: 'git@github.com:NikolaiNM/Jenkins.git',
-                        credentialsId: 'jenkins'
-                    ]]
-                ])
-                echo "Branch: ${BRANCH}"
+            dir('api-tests') {
+                checkout scm
             }
         }
 
         stage('Debug') {
-            steps {
-                script {
-                    echo "Build causes: ${currentBuild.getBuildCauses()}"
-                    echo "Resolved owner: ${Owner}"
-                    echo "Branch: ${BRANCH}"
-                }
-            }
+            echo "Build causes: ${currentBuild.getBuildCauses()}"
+            echo "Build user: ${env.BUILD_USER ?: 'SYSTEM'}"
         }
 
+        def configScriptPath = './config/config.py'
+
         stage('Generate job.ini config') {
-            steps {
-                dir('api-tests') {
-                    withCredentials([usernamePassword(credentialsId: 'your-credentials', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
-                        sh '''
-                            USER=${USER} PASSWORD=${PASSWORD} python3 ./config/config.py
-                        '''
-                    }
+            dir('api-tests') {
+                withCredentials([usernamePassword(credentialsId: 'jobs_builder_creds', usernameVariable: 'username', passwordVariable: 'password')]) {
+                    sh "USER=${username} PASSWORD=${password} python3 ${configScriptPath}"
                 }
             }
         }
 
         stage('Start update jobs') {
-            steps {
-                dir('api-tests') {
-                    sh '''
-                        jenkins-jobs --conf ./config/job.ini update ./jobs/
-                    '''
-                }
+            dir('api-tests') {
+                sh "jenkins-jobs --conf ./config/job.ini update ./jobs/"
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline execution completed.'
         }
     }
 }
