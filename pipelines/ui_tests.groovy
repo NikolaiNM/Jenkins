@@ -1,9 +1,9 @@
 import groovy.json.JsonSlurperClassic
 
 timeout(300) {
-    node('maven') {
+    node('docker-ce') {
         def userIdCause = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')?.find { it }
-        def owner = userIdCause?.userName ?: 'admin'
+        def owner = userIdCause?.userName ?: 'admin1'
 
         currentBuild.description = """
         BRANCH=${REFSPEC}
@@ -23,8 +23,8 @@ timeout(300) {
 
         stage('Runnung tests') {
             extCode = sh(
-                script: "docker run --rm --name=uitests -t localhost:5005/ui_tests:1.0.0"
-                script: "docker run --network=host ..."
+                script: "docker run --rm --name=uitests -t localhost:5005/docker-ce:1.0.0"
+                //script: "docker run --network=host ..."
                 //script: "mvn test -Dbrowser=${yamlConfig['BROWSER']} -DbrowserVersion=${yamlConfig['BROWSER_VERSION']}",
                 returnStatus: true
             )
