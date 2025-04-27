@@ -1,0 +1,15 @@
+- job-template:
+    name: ui-tests
+    description: 'Jobs ui-tests'
+    project-type: pipeline
+    parameters:
+      - string:
+          name: REFSPEC
+          default: main
+          description: 'Branch of ui-tests'
+      - text:
+          name: YAML_CONFIG    
+    pipeline-scm:
+      scm:
+        - ui-tests
+      script-path: pipelines/ui-tests.groovy
