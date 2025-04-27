@@ -63,9 +63,13 @@
 
 timeout(300) {
     node('python') {
+        // Получаем пользователя
+        def userIdCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
+        def owner = userIdCause?.getUserName() ?: 'SYSTEM'
+
         currentBuild.description = """
         BRANCH=${REFSPEC}
-        Owner=${env.BUILD_USER ?: 'SYSTEM'}
+        Owner=${owner}
         """
 
         stage('Checkout') {
@@ -76,7 +80,7 @@ timeout(300) {
 
         stage('Debug') {
             echo "Build causes: ${currentBuild.getBuildCauses()}"
-            echo "Build user: ${env.BUILD_USER ?: 'SYSTEM'}"
+            echo "Build user: ${owner}"
         }
 
         def configScriptPath = './config/config.py'
