@@ -4,7 +4,7 @@ timeout(300) {
 
         currentBuild.description = """
         BRANCH=${REFSPEC}
-        Owner=${env.BUILD_USER_ID}
+        Owner=${BUILD_USER_ID}
         """
 
         stage('Checkout') {
