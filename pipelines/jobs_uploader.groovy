@@ -63,16 +63,17 @@
 
 timeout(300) {
     node('python') {
-        // Получаем пользователя из причины сборки
+        // Определяем владельца через анализ причин сборки
+        def owner = 'SYSTEM'
         def buildCause = currentBuild.getBuildCauses()[0]
-        def owner = buildCause instanceof hudson.model.Cause.UserIdCause 
-            ? buildCause.userId 
-            : 'SYSTEM'
+        if (buildCause.getClass().getName() == 'hudson.model.Cause$UserIdCause') {
+            owner = buildCause.userId
+        }
 
         currentBuild.description = """
-        BRANCH=${env.GIT_BRANCH}  // Используем env.GIT_BRANCH вместо REFSPEC
+        BRANCH=${env.GIT_BRANCH}
         Owner=${owner}
-        """
+        """.stripIndent()
 
         stage('Checkout') {
             dir('api-tests') {
@@ -85,22 +86,25 @@ timeout(300) {
             echo "Resolved owner: ${owner}"
         }
 
-        def configScriptPath = './config/config.py'
+        def configScriptPath = './config/config.py'  // Путь относительно директории api-tests
 
         stage('Generate job.ini config') {
             dir('api-tests') {
                 withCredentials([usernamePassword(
                     credentialsId: 'jobs_builder_creds',
-                    usernameVariable: 'USERNAME',  // Используем верхний регистр
-                    passwordVariable: 'PASSWORD'    // для переменных
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
                 )]) {
-                    sh 'USER="$USERNAME" PASSWORD="$PASSWORD" python3 ${configScriptPath}'
+                    // Используем двойные кавычки для интерполяции переменных
+                    sh "USER='$USERNAME' PASSWORD='$PASSWORD' python3 ${configScriptPath}"
                 }
             }
         }
 
         stage('Start update jobs') {
             dir('api-tests') {
+                // Проверяем существование конфига
+                sh 'ls -la ./config/job.ini || echo "Config file not found!"'
                 sh "jenkins-jobs --conf ./config/job.ini update ./jobs/"
             }
         }
