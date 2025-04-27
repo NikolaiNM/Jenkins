@@ -61,22 +61,21 @@
 //     }
 // }
 
+
+
 pipeline {
     agent any
 
     environment {
-        // Автоматически определяем ветку
+        // Получаем ветку через git команду
         BRANCH = "${env.BRANCH_NAME ?: sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()}"
-        // Устанавливаем владельца
-        Owner = "${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'SYSTEM'}"
+        // Получаем имя пользователя через Cause
+        Owner = "${currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')?.userName ?: 'SYSTEM'}"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    echo "Checking out the repository..."
-                }
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: '*/main']],
@@ -94,7 +93,7 @@ pipeline {
         stage('Debug') {
             steps {
                 script {
-                    echo "Build causes: ${currentBuild.rawBuild.getCauses()}"
+                    echo "Build causes: ${currentBuild.getBuildCauses()}"
                     echo "Resolved owner: ${Owner}"
                     echo "Branch: ${BRANCH}"
                 }
