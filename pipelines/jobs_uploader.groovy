@@ -4,8 +4,9 @@ timeout(300) {
 
         currentBuild.description = """
         BRANCH=${REFSPEC}
-        Owner=${env.BUILD_USER}
+        Owner=${env.BUILD_USER ?: 'Automated (SCM)'}
         """
+                // Owner=${env.BUILD_USER}
 
         stage('Checkout') {
             dir('api-tests') {
