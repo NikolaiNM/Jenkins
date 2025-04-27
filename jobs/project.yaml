@@ -4,4 +4,10 @@
     job-description: '<h4 style="color:#999696;">Deploy jenkins jobs</h4>'
     jobs:
       - 'jobs-uploader'
+
+- project:
+    name: dcoker-ce
+    job-description: '<h4 style="color:#999696;">Deploy 123jenkins jobs</h4>'
+    jobs:
       - 'docker-ce'
+
