@@ -10,7 +10,7 @@
           refspec: $REFSPEC
 
 - scm:
-    name: 'docker-ce'
+    name: 'ui-tests'
     scm:
       - git:
           url: git@github.com:NikolaiNM/Otus_Pro_Dz1.git

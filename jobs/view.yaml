@@ -11,4 +11,3 @@
       - build-button
     job-name:
       - 'jobs-uploader'
-      - 'docker-ce'

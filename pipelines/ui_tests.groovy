@@ -17,9 +17,9 @@ timeout(300) {
 
         def yamlConfig = readYaml text: $YAML_CONFIG
 
-        stage('Running tests') {
-            def exitCode = script
-        }
+        // stage('Running tests') {
+        //     def exitCode = script
+        // }
 
         stage('Runnung tests') {
             extCode = sh(
