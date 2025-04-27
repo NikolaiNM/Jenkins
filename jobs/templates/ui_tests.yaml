@@ -11,5 +11,5 @@
           name: YAML_CONFIG    
     pipeline-scm:
       scm:
-        - ui-tests
+        - docker-ce
       script-path: pipelines/ui-tests.groovy

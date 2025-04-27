@@ -10,7 +10,7 @@
           refspec: $REFSPEC
 
 - scm:
-    name: 'ui-tests'
+    name: 'docker-ce'
     scm:
       - git:
           url: git@github.com:NikolaiNM/ui_tests.git
