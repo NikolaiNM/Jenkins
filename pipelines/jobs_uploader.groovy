@@ -63,9 +63,9 @@
 
 timeout(300) {
     node('python') {
-        // Получаем пользователя
-        def userIdCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
-        def owner = userIdCause?.getUserName() ?: 'SYSTEM'
+        // Попытка получить имя пользователя безопасно
+        def userIdCause = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')?.find { it }
+        def owner = userIdCause?.userName ?: 'admin'
 
         currentBuild.description = """
         BRANCH=${REFSPEC}
