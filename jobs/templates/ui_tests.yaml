@@ -12,4 +12,4 @@
     pipeline-scm:
       scm:
         - ui-tests
-      script-path: pipelines/ui-tests.groovy
+      script-path: pipelines/ui_tests.groovy
