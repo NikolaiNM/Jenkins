@@ -61,17 +61,27 @@
 //     }
 // }
 
+// Добавляем явный импорт класса UserIdCause
+import hudson.model.Cause.UserIdCause
+
 timeout(300) {
     node('python') {
+        // Определяем ветку через env.BRANCH_NAME
+        def branch = env.BRANCH_NAME ?: 'unknown'
+
         // Определяем владельца через анализ причин сборки
         def owner = 'SYSTEM'
-        def buildCause = currentBuild.getBuildCauses()[0]
-        if (buildCause.getClass().getName() == 'hudson.model.Cause$UserIdCause') {
-            owner = buildCause.userId
+        def causes = currentBuild.getBuildCauses()
+        
+        causes.each { cause ->
+            // Используем instanceof с явно импортированным классом
+            if (cause instanceof UserIdCause) {
+                owner = cause.userId ?: cause.userName
+            }
         }
 
         currentBuild.description = """
-        BRANCH=${env.GIT_BRANCH}
+        BRANCH=${branch}
         Owner=${owner}
         """.stripIndent()
 
@@ -82,11 +92,13 @@ timeout(300) {
         }
 
         stage('Debug') {
-            echo "Build causes: ${currentBuild.getBuildCauses()}"
+            echo "Build causes: ${causes}"
             echo "Resolved owner: ${owner}"
+            echo "Branch: ${branch}"
         }
 
-        def configScriptPath = './config/config.py'  // Путь относительно директории api-tests
+        // Остальные этапы остаются без изменений
+        def configScriptPath = './config/config.py'
 
         stage('Generate job.ini config') {
             dir('api-tests') {
@@ -95,7 +107,6 @@ timeout(300) {
                     usernameVariable: 'USERNAME',
                     passwordVariable: 'PASSWORD'
                 )]) {
-                    // Используем двойные кавычки для интерполяции переменных
                     sh "USER='$USERNAME' PASSWORD='$PASSWORD' python3 ${configScriptPath}"
                 }
             }
@@ -103,8 +114,6 @@ timeout(300) {
 
         stage('Start update jobs') {
             dir('api-tests') {
-                // Проверяем существование конфига
-                sh 'ls -la ./config/job.ini || echo "Config file not found!"'
                 sh "jenkins-jobs --conf ./config/job.ini update ./jobs/"
             }
         }
