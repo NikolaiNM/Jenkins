@@ -15,25 +15,21 @@ timeout(300) {
             }
         }
 
-        def yamlConfig = readYaml text: $YAML_CONFIG
+        def yamlConfig = readYaml text: "${YAML_CONFIG}" 
 
-        // stage('Running tests') {
-        //     def exitCode = script
-        // }
-
-        stage('Runnung tests') {
-            extCode = sh(
-                script: "docker run --rm --name=uitests -t localhost:5005/docker-ce:1.0.0"
-                //script: "docker run --network=host ..."
-                //script: "mvn test -Dbrowser=${yamlConfig['BROWSER']} -DbrowserVersion=${yamlConfig['BROWSER_VERSION']}",
+        stage('Running tests') { // Исправлена опечатка в названии этапа
+            // Исправлено: единообразное именование переменной и синтаксис sh-команды
+            def exitCode = sh(
+                script: "docker run --rm --name=uitests -t localhost:5005/docker-ce:1.0.0",
                 returnStatus: true
             )
 
-            if(exitCode > 0) {
+            // Исправлено: использование правильного имени переменной
+            if(exitCode > 0) { 
                 currentBuild.status = 'UNSTABLE'
             }
         }
-
+        
         // stage('Publish allure report') {
         //     dir('api-tests') {
         //         allure({
