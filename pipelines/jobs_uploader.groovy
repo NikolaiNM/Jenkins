@@ -61,61 +61,72 @@
 //     }
 // }
 
-// Добавляем явный импорт класса UserIdCause
-import hudson.model.Cause.UserIdCause
+pipeline {
+    agent any
 
-timeout(300) {
-    node('python') {
-        // Определяем ветку через env.BRANCH_NAME
-        def branch = env.BRANCH_NAME ?: 'unknown'
+    environment {
+        // Автоматически определяем ветку
+        BRANCH = "${env.BRANCH_NAME ?: sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()}"
+        // Устанавливаем владельца
+        Owner = "${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'SYSTEM'}"
+    }
 
-        // Определяем владельца через анализ причин сборки
-        def owner = 'SYSTEM'
-        def causes = currentBuild.getBuildCauses()
-        
-        causes.each { cause ->
-            // Используем instanceof с явно импортированным классом
-            if (cause instanceof UserIdCause) {
-                owner = cause.userId ?: cause.userName
-            }
-        }
-
-        currentBuild.description = """
-        BRANCH=${branch}
-        Owner=${owner}
-        """.stripIndent()
-
+    stages {
         stage('Checkout') {
-            dir('api-tests') {
-                checkout scm
+            steps {
+                script {
+                    echo "Checking out the repository..."
+                }
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [],
+                    userRemoteConfigs: [[
+                        url: 'git@github.com:NikolaiNM/Jenkins.git',
+                        credentialsId: 'jenkins'
+                    ]]
+                ])
+                echo "Branch: ${BRANCH}"
             }
         }
 
         stage('Debug') {
-            echo "Build causes: ${causes}"
-            echo "Resolved owner: ${owner}"
-            echo "Branch: ${branch}"
+            steps {
+                script {
+                    echo "Build causes: ${currentBuild.rawBuild.getCauses()}"
+                    echo "Resolved owner: ${Owner}"
+                    echo "Branch: ${BRANCH}"
+                }
+            }
         }
 
-        // Остальные этапы остаются без изменений
-        def configScriptPath = './config/config.py'
-
         stage('Generate job.ini config') {
-            dir('api-tests') {
-                withCredentials([usernamePassword(
-                    credentialsId: 'jobs_builder_creds',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
-                )]) {
-                    sh "USER='$USERNAME' PASSWORD='$PASSWORD' python3 ${configScriptPath}"
+            steps {
+                dir('api-tests') {
+                    withCredentials([usernamePassword(credentialsId: 'your-credentials', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
+                        sh '''
+                            USER=${USER} PASSWORD=${PASSWORD} python3 ./config/config.py
+                        '''
+                    }
                 }
             }
         }
 
         stage('Start update jobs') {
-            dir('api-tests') {
-                sh "jenkins-jobs --conf ./config/job.ini update ./jobs/"
+            steps {
+                dir('api-tests') {
+                    sh '''
+                        jenkins-jobs --conf ./config/job.ini update ./jobs/
+                    '''
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed.'
         }
     }
 }
