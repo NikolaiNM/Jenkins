@@ -63,7 +63,6 @@
 
 timeout(300) {
     node('python') {
-        // Попытка получить имя пользователя безопасно
         def userIdCause = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')?.find { it }
         def owner = userIdCause?.userName ?: 'admin'
 
@@ -78,10 +77,7 @@ timeout(300) {
             }
         }
 
-        stage('Debug') {
-            echo "Build causes: ${currentBuild.getBuildCauses()}"
-            echo "Build user: ${owner}"
-        }
+
 
         def configScriptPath = './config/config.py'
 
