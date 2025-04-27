@@ -4,3 +4,7 @@ USER root
 
 RUN apt update -y
 RUN apt install -y python3
+
+RUN python3 -m pip config set global.break-system-packages true
+
+RUN pip3 install jinja2 jenkins-job-builder
